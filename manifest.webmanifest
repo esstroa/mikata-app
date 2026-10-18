@@ -1,0 +1,9 @@
+{
+  "name": "ユキナのミカタ",
+  "short_name": "ユキナのミカタ",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#fdf6f4",
+  "theme_color": "#fdf6f4",
+  "icons": [{ "src": "icon.png", "sizes": "180x180", "type": "image/png" }]
+}

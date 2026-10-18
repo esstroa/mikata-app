@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="ユキナのミカタ">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#fdf6f4">
+<meta name="robots" content="noindex, nofollow">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="stylesheet" href="style.css">
+<title>ユキナのミカタ</title>
+</head>
+<body>
+<main id="app">
+  <section id="today" class="card"></section>
+
+  <section class="card">
+    <div class="calhead">
+      <button id="sheetPrev" aria-label="前のシート">‹</button>
+      <h2 id="sheetLabel">錠剤シート</h2>
+      <button id="sheetNext" aria-label="次のシート">›</button>
+    </div>
+    <div id="sheet" class="sheet"></div>
+    <ul class="legend">
+      <li><i class="lg active"></i>実薬</li>
+      <li><i class="lg placebo"></i>偽薬</li>
+      <li><i class="lg done"></i>飲んだ</li>
+      <li><i class="lg rest"></i>休薬</li>
+    </ul>
+    <p class="small">錠をタップすると、その日の「飲んだ」を付けたり外したりできます。過去の日も自由に直せます。</p>
+  </section>
+
+  <section class="card">
+    <div class="calhead">
+      <button id="prev" aria-label="前の月">‹</button>
+      <h2 id="monthLabel"></h2>
+      <button id="next" aria-label="次の月">›</button>
+    </div>
+    <div id="cal" class="cal"></div>
+    <ul class="legend">
+      <li><i class="lg placebo"></i>偽薬の日</li>
+      <li><i class="lg rest"></i>休薬</li>
+      <li><i class="lg period"></i>生理</li>
+      <li><span class="dot"></span>飲んだ</li>
+      <li>✎ メモあり</li>
+    </ul>
+    <p class="small">日付をタップすると、飲んだ記録・生理・メモを編集できます。</p>
+  </section>
+
+  <section class="card">
+    <h2>受診</h2>
+    <label>次回の受診予定日<input type="date" id="nextVisit"></label>
+    <label>かかりつけ医・薬局の名前<input type="text" id="docName" autocomplete="off"></label>
+    <label>電話番号<input type="tel" id="docPhone" autocomplete="off"></label>
+  </section>
+
+  <section class="card">
+    <h2>飲み忘れたとき</h2>
+    <p class="small">飲み忘れたときの対応は、服用している薬の添付文書で確認するか、医師・薬剤師に相談してください。このアプリは医療上の判断をしません。</p>
+  </section>
+
+  <section class="card">
+    <h2>ピルの設定</h2>
+    <p class="small">ピルを飲み始めたとき、シートを新しく始めたとき、種類が変わったときに、その日を開始日として追加します。開始日は過去の日でも入れられます。</p>
+    <label>開始日（1錠目を飲んだ日）
+      <input type="date" id="packStart">
+    </label>
+    <label>ピルの種類
+      <select id="preset"></select>
+    </label>
+    <div class="row3">
+      <label>実薬の日数<input type="number" id="nActive" min="0" max="365" inputmode="numeric"></label>
+      <label>偽薬の日数<input type="number" id="nPlacebo" min="0" max="365" inputmode="numeric"></label>
+      <label>休薬の日数<input type="number" id="nRest" min="0" max="365" inputmode="numeric"></label>
+    </div>
+    <div class="row"><button id="btnAddStart" class="primary">この日から追加する</button></div>
+    <h2 class="sub">登録済みの開始日</h2>
+    <ul id="starts" class="history"></ul>
+    <p class="small">登録した飲み方は、次の開始日が来るまで続きます。種類が変わったら、変わった日を新しい開始日として追加すると、それ以前の記録はそのまま残ります。</p>
+  </section>
+
+  <section class="card">
+    <h2>カレンダーのアラーム（任意）</h2>
+    <label>毎日のアラームの時刻<input type="time" id="alarmTime"></label>
+    <label class="check"><input type="checkbox" id="alarm2"> 30分後にもう一度鳴らす</label>
+    <div class="row"><button id="btnIcs">アラームと予定をカレンダーに追加</button></div>
+    <p class="small">iPhoneのカレンダーが鳴らします。このアプリを開いていなくても鳴りますが、飲んだ日も鳴ります。使わなくても、記録は問題なく使えます。</p>
+  </section>
+
+  <section class="card">
+    <h2>データ</h2>
+    <div class="row">
+      <button id="btnExport">データを書き出す</button>
+      <label class="filebtn">データを読み込む<input type="file" id="importFile" accept="application/json"></label>
+    </div>
+    <p class="small">機種変更のときなどに、書き出したファイルで引き継げます。</p>
+  </section>
+
+  <p class="small note">このアプリのデータは、この端末の中だけに保存されます。サーバーには送信されません。</p>
+</main>
+
+<dialog id="dayDlg">
+  <form method="dialog" id="dayForm">
+    <h2 id="dayTitle"></h2>
+    <p id="dayPill" class="small"></p>
+    <label class="check"><input type="checkbox" id="dayTaken"> 飲んだ</label>
+    <label class="check"><input type="checkbox" id="dayPeriod"> 生理</label>
+    <label>メモ<textarea id="dayNote" rows="3"></textarea></label>
+    <div class="row">
+      <button value="cancel">閉じる</button>
+      <button id="daySave" value="ok" class="primary">保存</button>
+    </div>
+  </form>
+</dialog>
+
+<script src="logic.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
