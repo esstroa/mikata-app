@@ -69,9 +69,20 @@
     if (Object.keys(next).length) state.days[date] = next; else delete state.days[date];
   }
   function toggleTaken(date) {
-    if (day(date).taken) setDay(date, { taken: false, t: '' });
+    const was = !!day(date).taken;
+    if (was) setDay(date, { taken: false, t: '' });
     else setDay(date, { taken: true, t: date === todayStr() ? hm() : '' });
     save(); render();
+    if (!was) showStamp();
+  }
+
+  // 「飲んだ」を記録したとき、画面いっぱいにスタンプを出す
+  function showStamp() {
+    const old = document.querySelector('.stamp');
+    if (old) old.remove();
+    const el = h('div', { class: 'stamp', 'aria-hidden': 'true' }, h('img', { src: 'stamp.png', alt: '' }));
+    document.body.append(el);
+    setTimeout(() => el.remove(), 1500);
   }
 
   // ---- 今日 ----
@@ -200,6 +211,7 @@
       period: $('dayPeriod').checked,
     });
     save(); render();
+    if (now && !was) showStamp();
   });
 
   // ---- 受診 ----
@@ -221,8 +233,6 @@
       sel.append(h('option', { value: 'custom' }, '自由に入力する'));
       fillPreset(L.PRESETS[0]);
     }
-    $('alarmTime').value = S.alarmTime;
-    $('alarm2').checked = !!S.alarm2;
     const ul = $('starts');
     ul.replaceChildren();
     L.sortedPacks(S).reverse().forEach((p) => {
@@ -249,47 +259,12 @@
     S.packs = S.packs.filter((x) => x.start !== start).concat(p);
     sheetStart = null; save(); render();
   });
-  $('alarmTime').addEventListener('change', (e) => { state.settings.alarmTime = e.target.value || '21:00'; save(); });
-  $('alarm2').addEventListener('change', (e) => { state.settings.alarm2 = e.target.checked; save(); });
-
-  // ---- カレンダーへ書き出し（.ics） ----
-  function buildIcs() {
-    const S = state.settings, t = todayStr();
-    const stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+Z$/, 'Z');
-    const ymd = (s) => s.replace(/-/g, '');
-    const [hh, mm] = S.alarmTime.split(':');
-    const out = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//kiroku//JA', 'CALSCALE:GREGORIAN'];
-
-    // 毎日のアラーム（同じUIDなので、取り込み直すと更新される）
-    out.push('BEGIN:VEVENT', 'UID:daily-pill@kiroku', `DTSTAMP:${stamp}`,
-      `DTSTART:${ymd(t)}T${hh}${mm}00`, 'DURATION:PT5M', 'RRULE:FREQ=DAILY', 'SUMMARY:ピルを飲む',
-      'BEGIN:VALARM', 'ACTION:DISPLAY', 'DESCRIPTION:ピルを飲む時間です', 'TRIGGER:PT0S', 'END:VALARM');
-    if (S.alarm2) out.push('BEGIN:VALARM', 'ACTION:DISPLAY', 'DESCRIPTION:ピルは飲みましたか', 'TRIGGER:PT30M', 'END:VALARM');
-    out.push('END:VEVENT');
-
-    const allDay = (uid, summary, from) => {
-      out.push('BEGIN:VEVENT', `UID:${uid}@kiroku`, `DTSTAMP:${stamp}`,
-        `DTSTART;VALUE=DATE:${ymd(from)}`, `DTEND;VALUE=DATE:${ymd(L.addDays(from, 1))}`, `SUMMARY:${summary}`,
-        'BEGIN:VALARM', 'ACTION:DISPLAY', `DESCRIPTION:${summary}`, 'TRIGGER:-PT15H', 'END:VALARM', 'END:VEVENT');
-    };
-    let next = L.nextPackStart(S, t);
-    for (let i = 0; i < 3 && next; i++) {
-      allDay(`prep-${next}`, '次のシートの準備', L.addDays(next, -7));
-      allDay(`pack-${next}`, '新しいシートの開始', next);
-      next = L.nextPackStart(S, next);
-    }
-    const v = S.doctor.nextVisit;
-    if (v && DATE_RE.test(v) && v >= t) allDay(`visit-${v}`, `受診${S.doctor.name ? '（' + S.doctor.name.replace(/[,;\\\r\n]/g, ' ') + '）' : ''}`, v);
-    out.push('END:VCALENDAR');
-    return out.join('\r\n');
-  }
   function download(name, type, text) {
     const url = URL.createObjectURL(new Blob([text], { type }));
     const a = h('a', { href: url, download: name });
     document.body.append(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 5000);
   }
-  $('btnIcs').addEventListener('click', () => download('kiroku.ics', 'text/calendar', buildIcs()));
 
   // ---- 書き出し・読み込み ----
   $('btnExport').addEventListener('click', () => download(`kiroku-${todayStr()}.json`, 'application/json', JSON.stringify(state, null, 2)));

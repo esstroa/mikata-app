@@ -76,3 +76,9 @@ h2.sub { margin-top: 16px; }
 .pill.rest { background: transparent; border-style: dashed; color: var(--sub); }
 .lg.rest { background: repeating-linear-gradient(45deg, transparent 0 3px, var(--sub) 3px 4px); border: 1px solid var(--line); }
 .pill.other { opacity: .35; }
+
+.stamp { position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,.75); pointer-events: none; animation: stamp-bg 1.5s ease-out forwards; }
+.stamp img { width: min(100vw, 85vh, 720px); height: auto; animation: stamp-pop 1.5s cubic-bezier(.2,1.4,.4,1) forwards; }
+@keyframes stamp-pop { 0% { transform: scale(2.4) rotate(-14deg); opacity: 0; } 25% { transform: scale(.95) rotate(-6deg); opacity: 1; } 40% { transform: scale(1) rotate(-6deg); } 80% { transform: scale(1) rotate(-6deg); opacity: 1; } 100% { transform: scale(1) rotate(-6deg); opacity: 0; } }
+@keyframes stamp-bg { 0%, 80% { opacity: 1; } 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .stamp img { animation: none; transform: rotate(-6deg); } }
