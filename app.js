@@ -3,6 +3,8 @@
   const KEY = 'kiroku-v2';
   const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
   const WEEK = ['日', '月', '火', '水', '木', '金', '土'];
+  // スタンプの画像は stamps/<番号>.webp（全画面用）と stamps/<番号>-s.webp（カレンダー用の小さい版）。増やしたらここに番号を足す
+  const STAMPS = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
   const KIND = { active: '実薬', placebo: '偽薬', rest: '休薬日' };
   const $ = (id) => document.getElementById(id);
   const todayStr = () => L.fmt(new Date());
@@ -65,22 +67,26 @@
   const day = (date) => state.days[date] || {};
   function setDay(date, patch) {
     const next = Object.assign({}, day(date), patch);
-    ['taken', 'period', 'note', 't'].forEach((k) => { if (!next[k]) delete next[k]; });
+    ['taken', 'period', 'note', 't', 'stamp'].forEach((k) => { if (!next[k]) delete next[k]; });
     if (Object.keys(next).length) state.days[date] = next; else delete state.days[date];
   }
+  const stampOf = (date) => { const s = day(date).stamp; return STAMPS.includes(s) ? s : ''; };
+  // その日のスタンプ。まだ決まっていなければランダムに選ぶ（取り消して押し直しても同じ）
+  const pickStamp = (date) => stampOf(date) || STAMPS[Math.floor(Math.random() * STAMPS.length)];
   function toggleTaken(date) {
     const was = !!day(date).taken;
+    const stamp = pickStamp(date);
     if (was) setDay(date, { taken: false, t: '' });
-    else setDay(date, { taken: true, t: date === todayStr() ? hm() : '' });
+    else setDay(date, { taken: true, t: date === todayStr() ? hm() : '', stamp });
     save(); render();
-    if (!was) showStamp();
+    if (!was) showStamp(stamp);
   }
 
   // 「飲んだ」を記録したとき、画面いっぱいにスタンプを出す
-  function showStamp() {
+  function showStamp(id) {
     const old = document.querySelector('.stamp');
     if (old) old.remove();
-    const el = h('div', { class: 'stamp', 'aria-hidden': 'true' }, h('img', { src: 'stamp.png', alt: '' }));
+    const el = h('div', { class: 'stamp', 'aria-hidden': 'true' }, h('img', { src: `stamps/${id}.webp`, alt: '' }));
     document.body.append(el);
     setTimeout(() => el.remove(), 1500);
   }
@@ -179,7 +185,7 @@
       if (date === t) cls.push('today');
       const icons = h('span', { class: 'icons' },
         kind === 'placebo' || kind === 'rest' ? h('span', { class: 'ic rest', 'aria-label': '休薬' }) : '',
-        rec.taken ? h('span', { class: 'ic taken', 'aria-label': '服用した' }, h('img', { src: 'taken.png', alt: '' })) : '',
+        rec.taken ? h('span', { class: 'ic taken', 'aria-label': '服用した' }, h('img', { src: stampOf(date) ? `stamps/${stampOf(date)}-s.webp` : 'taken.png', alt: '' })) : '',
         '');
       const top = h('span', { class: 'top' }, h('span', { class: 'num' }, String(d)), rec.period ? h('span', { class: 'ic period', 'aria-label': '生理' }) : '');
       cal.append(h('button', { class: cls.join(' '), onclick: () => openDay(date) }, top, icons));
@@ -206,12 +212,14 @@
   $('dayDlg').addEventListener('close', () => {
     if ($('dayDlg').returnValue !== 'ok' || !editing) return;
     const was = !!day(editing).taken, now = $('dayTaken').checked;
+    const stamp = now ? pickStamp(editing) : stampOf(editing);
     setDay(editing, {
+      stamp,
       taken: now, t: now ? (was ? day(editing).t : (editing === todayStr() ? hm() : '')) : '',
       period: $('dayPeriod').checked,
     });
     save(); render();
-    if (now && !was) showStamp();
+    if (now && !was) showStamp(stamp);
   });
 
   // ---- 受診 ----
