@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="ユキナのミカタ">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="theme-color" content="#fdf6f4">
+<meta name="theme-color" content="#ffffff">
 <meta name="robots" content="noindex, nofollow">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon.png">
@@ -41,13 +41,11 @@
     </div>
     <div id="cal" class="cal"></div>
     <ul class="legend">
-      <li><i class="lg placebo"></i>偽薬の日</li>
-      <li><i class="lg rest"></i>休薬</li>
-      <li><i class="lg period"></i>生理</li>
-      <li><span class="dot"></span>飲んだ</li>
-      <li>✎ メモあり</li>
+      <li><span class="ic taken">🐰</span>服用した</li>
+      <li><span class="ic rest"></span>休薬</li>
+      <li><span class="ic period"></span>生理</li>
     </ul>
-    <p class="small">日付をタップすると、飲んだ記録・生理・メモを編集できます。</p>
+    <p class="small">日付をタップすると、飲んだ記録・生理を編集できます。</p>
   </section>
 
   <section class="card">
@@ -108,7 +106,6 @@
     <p id="dayPill" class="small"></p>
     <label class="check"><input type="checkbox" id="dayTaken"> 飲んだ</label>
     <label class="check"><input type="checkbox" id="dayPeriod"> 生理</label>
-    <label>メモ<textarea id="dayNote" rows="3"></textarea></label>
     <div class="row">
       <button value="cancel">閉じる</button>
       <button id="daySave" value="ok" class="primary">保存</button>

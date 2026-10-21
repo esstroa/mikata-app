@@ -165,11 +165,12 @@
       const date = `${calMonth}-${String(d).padStart(2, '0')}`;
       const rec = day(date), kind = L.dayKind(state.settings, date);
       const cls = ['day'];
-      if (kind === 'placebo' || kind === 'rest') cls.push(kind);
-      if (rec.period) cls.push('period');
       if (date === t) cls.push('today');
-      const mark = h('span', { class: 'mark' }, rec.taken ? h('span', { class: 'dot' }) : '', rec.note ? '✎' : '');
-      cal.append(h('button', { class: cls.join(' '), onclick: () => openDay(date) }, String(d), mark));
+      const icons = h('span', { class: 'icons' },
+        kind === 'placebo' || kind === 'rest' ? h('span', { class: 'ic rest', 'aria-label': '休薬' }) : '',
+        rec.taken ? h('span', { class: 'ic taken', 'aria-label': '服用した' }, '🐰') : '',
+        rec.period ? h('span', { class: 'ic period', 'aria-label': '生理' }) : '');
+      cal.append(h('button', { class: cls.join(' '), onclick: () => openDay(date) }, h('span', { class: 'num' }, String(d)), icons));
     }
   }
   function shiftMonth(n) {
@@ -188,7 +189,6 @@
     $('dayTaken').checked = !!rec.taken;
     $('dayTaken').disabled = date > todayStr() || (info && info.kind === 'rest');
     $('dayPeriod').checked = !!rec.period;
-    $('dayNote').value = rec.note || '';
     $('dayDlg').showModal();
   }
   $('dayDlg').addEventListener('close', () => {
@@ -196,7 +196,7 @@
     const was = !!day(editing).taken, now = $('dayTaken').checked;
     setDay(editing, {
       taken: now, t: now ? (was ? day(editing).t : (editing === todayStr() ? hm() : '')) : '',
-      period: $('dayPeriod').checked, note: $('dayNote').value.trim(),
+      period: $('dayPeriod').checked,
     });
     save(); render();
   });
