@@ -168,9 +168,10 @@
       if (date === t) cls.push('today');
       const icons = h('span', { class: 'icons' },
         kind === 'placebo' || kind === 'rest' ? h('span', { class: 'ic rest', 'aria-label': '休薬' }) : '',
-        rec.taken ? h('span', { class: 'ic taken', 'aria-label': '服用した' }, '🐰') : '',
-        rec.period ? h('span', { class: 'ic period', 'aria-label': '生理' }) : '');
-      cal.append(h('button', { class: cls.join(' '), onclick: () => openDay(date) }, h('span', { class: 'num' }, String(d)), icons));
+        rec.taken ? h('span', { class: 'ic taken', 'aria-label': '服用した' }, h('img', { src: 'taken.png', alt: '' })) : '',
+        '');
+      const top = h('span', { class: 'top' }, h('span', { class: 'num' }, String(d)), rec.period ? h('span', { class: 'ic period', 'aria-label': '生理' }) : '');
+      cal.append(h('button', { class: cls.join(' '), onclick: () => openDay(date) }, top, icons));
     }
   }
   function shiftMonth(n) {
