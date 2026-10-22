@@ -4,7 +4,7 @@
   const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
   const WEEK = ['日', '月', '火', '水', '木', '金', '土'];
   // スタンプの画像は stamps/<番号>.webp（全画面用）と stamps/<番号>-s.webp（カレンダー用の小さい版）。増やしたらここに番号を足す
-  const STAMPS = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
+  const STAMPS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16'];
   const KIND = { active: '実薬', placebo: '偽薬', rest: '休薬日' };
   const $ = (id) => document.getElementById(id);
   const todayStr = () => L.fmt(new Date());
